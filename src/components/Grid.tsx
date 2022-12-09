@@ -54,7 +54,7 @@ function asPosition(index: number, width: number, height: number): Position {
     console.assert(index < height * width);
     const row = Math.floor(index / width);
     const col = index - row * width;
-    return {row: row, column: col};
+    return { row: row, column: col };
 }
 
 function getNeighborsOf(index: number, width: number, height: number): number[] {
@@ -63,23 +63,22 @@ function getNeighborsOf(index: number, width: number, height: number): number[] 
     const neighbors: number[] = [];
 
     if (position.row > 0) {
-        neighbors.push(asIndex({row: position.row - 1, column: position.column}, width, height));
+        neighbors.push(asIndex({ row: position.row - 1, column: position.column }, width, height));
     }
     if (position.row + 1 < height) {
-        neighbors.push(asIndex({row: position.row + 1, column: position.column}, width, height));
+        neighbors.push(asIndex({ row: position.row + 1, column: position.column }, width, height));
     }
     if (position.column > 0) {
-        neighbors.push(asIndex({row: position.row, column: position.column - 1}, width, height));
+        neighbors.push(asIndex({ row: position.row, column: position.column - 1 }, width, height));
     }
     if (position.column + 1 < width) {
-        neighbors.push(asIndex({row: position.row, column: position.column + 1}, width, height));
+        neighbors.push(asIndex({ row: position.row, column: position.column + 1 }, width, height));
     }
 
     return neighbors;
 }
 
-function getIndicesOfconnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): number[]
-{
+function getIndicesOfconnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): number[] {
     const value = data[index];
 
     const connectedNeighbord: number[] = [];
@@ -110,11 +109,11 @@ function getIndicesOfconnectedElementsWithSameValue(data: number[], index: numbe
 function findNextUndefinedAbove(position: Position, data: (number | undefined)[], width: number, height: number): number | undefined {
     let row = position.row - 1;
     while (row >= 0) {
-        const index = asIndex({row: row, column: position.column}, width, height);
+        const index = asIndex({ row: row, column: position.column }, width, height);
         if (data[index] !== undefined) {
             return index;
         }
-        row --;
+        row--;
     }
     return undefined;
 }
@@ -127,14 +126,13 @@ function swapInArray(data: (number | undefined)[], index1: number, index2: numbe
 
 
 // export only to unit tests
-export function collapseConnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): (number | undefined)[]
-{
+export function collapseConnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): (number | undefined)[] {
     const neighbors = getIndicesOfconnectedElementsWithSameValue(data, index, width, height);
     if (neighbors.length < 2) {
         return data; // only collapse if more than one cell has the value
     }
 
-    const newData : (number | undefined)[] = [...data];
+    const newData: (number | undefined)[] = [...data];
     // erase all cells with same value
     neighbors.forEach(index => {
         newData[index] = undefined;
@@ -144,7 +142,7 @@ export function collapseConnectedElementsWithSameValue(data: number[], index: nu
     // fill undefined values with values from top if available
     for (let column = 0; column < width; ++column) {
         for (let row = height - 1; row >= 0; row -= 1) {
-            const positionThis = {row: row, column: column};
+            const positionThis = { row: row, column: column };
             const indexThis = asIndex(positionThis, width, height);
             if (newData[indexThis] !== undefined) {
                 continue; // we only care for undefined
@@ -168,8 +166,7 @@ export function collapseConnectedElementsWithSameValue(data: number[], index: nu
  * Fill the gaps with new values.
  * @return new data
  */
-function collapseConnectedElementsWithSameValueAndFillRandomly(data: number[], index: number, width: number, height: number): number[]
-{
+function collapseConnectedElementsWithSameValueAndFillRandomly(data: number[], index: number, width: number, height: number): number[] {
     const newMinRandValue = 0;
     const newMaxRandValue = Math.max(...data, 2) - 1;  // make this a parameter?
 
