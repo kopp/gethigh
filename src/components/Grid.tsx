@@ -207,7 +207,10 @@ export interface GridProps {
 }
 
 export function Grid(props: GridProps) {
-    const [values, setValues] = useState<number[]>(randInts(0, props.maxInitValue, props.width * props.height));
+
+    const initialValues = () => randInts(0, props.maxInitValue, props.width * props.height);
+
+    const [values, setValues] = useState<number[]>(initialValues());
     const [selectedIndex, setSelectedIndex] = useState<number | undefined>(undefined);
 
     const gridTemplateColumns: string[] = [];
@@ -221,18 +224,18 @@ export function Grid(props: GridProps) {
         const isActive = highlightedIndices.includes(i);
         cells.push(
             <div
-            key={i}
-            className={`grid-item ${isActive ? 'active-item' : ''}`}
-            style={{backgroundColor: getColorFor(values[i])}}
-            onClick={_event => {
-                if (isActive) {
-                    setValues(collapseConnectedElementsWithSameValueAndFillRandomly(values, i, props.width, props.height));
-                    setSelectedIndex(undefined);
-                }
-                else {
-                    setSelectedIndex(i)
-                }
-            }}>
+                key={i}
+                className={`grid-item ${isActive ? 'active-item' : ''}`}
+                style={{ backgroundColor: getColorFor(values[i]) }}
+                onClick={_event => {
+                    if (isActive) {
+                        setValues(collapseConnectedElementsWithSameValueAndFillRandomly(values, i, props.width, props.height));
+                        setSelectedIndex(undefined);
+                    }
+                    else {
+                        setSelectedIndex(i)
+                    }
+                }}>
                 {values[i]}
             </div>
         )
@@ -244,10 +247,15 @@ export function Grid(props: GridProps) {
 
     return (
         <>
-        {isGameOver && <div id="gameOver">Game over!</div>}
-        <div className="grid-container" style={{gridTemplateColumns: gridTemplateColumns.join(" ")}}>
-            {cells}
-        </div>
+            {isGameOver && (
+                <div>
+                    <div id="gameOver">Game over!</div>
+                    <div id="retry"><span onClick={() => setValues(initialValues())}>retry</span></div>
+                </div>
+            )}
+            <div className="grid-container" style={{ gridTemplateColumns: gridTemplateColumns.join(" ") }}>
+                {cells}
+            </div>
         </>
     )
 }
