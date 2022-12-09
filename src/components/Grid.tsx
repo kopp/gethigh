@@ -170,13 +170,14 @@ export function collapseConnectedElementsWithSameValue(data: number[], index: nu
  */
 function collapseConnectedElementsWithSameValueAndFillRandomly(data: number[], index: number, width: number, height: number): number[]
 {
-    const newMaxRandValue = Math.max(...data);  // make this a parameter?
+    const newMinRandValue = 0;
+    const newMaxRandValue = Math.max(...data, 2) - 1;  // make this a parameter?
 
     const newData = collapseConnectedElementsWithSameValue(data, index, width, height);
 
     for (let i = 0; i < newData.length; ++i) {
         if (newData[i] === undefined) {
-            newData[i] = randInt(1, newMaxRandValue);
+            newData[i] = randInt(newMinRandValue, newMaxRandValue);
         }
     }
 
