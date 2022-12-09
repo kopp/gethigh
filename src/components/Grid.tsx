@@ -249,7 +249,7 @@ export function Grid(props: GridProps) {
         <>
             {isGameOver && (
                 <div>
-                    <div id="gameOver">Game over!</div>
+                    <div id="gameOver">Game Over!</div>
                     <div id="retry"><span onClick={() => setValues(initialValues())}>retry</span></div>
                 </div>
             )}
