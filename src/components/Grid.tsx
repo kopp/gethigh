@@ -37,12 +37,14 @@ function randInts(from: number, to: number, size: number): number[] {
     return numbers;
 }
 
-interface Position {
+// export for unit test
+export interface Position {
     row: number,
     column: number,
 }
 
-function asIndex(position: Position, width: number, height: number): number {
+// export for unit test
+export function asIndex(position: Position, width: number, height: number): number {
     console.assert(position.row < height);
     console.assert(position.column < width);
     return position.column + position.row * width;
@@ -105,13 +107,14 @@ function getIndicesOfconnectedElementsWithSameValue(data: number[], index: numbe
     return connectedNeighbord;
 }
 
-function findNextUndefinedAbove(position: Position, data: number[], width: number, height: number): number | undefined {
+function findNextUndefinedAbove(position: Position, data: (number | undefined)[], width: number, height: number): number | undefined {
     let row = position.row - 1;
     while (row >= 0) {
         const index = asIndex({row: row, column: position.column}, width, height);
         if (data[index] !== undefined) {
             return index;
         }
+        row --;
     }
     return undefined;
 }
@@ -122,25 +125,23 @@ function swapInArray(data: (number | undefined)[], index1: number, index2: numbe
     data[index2] = temp;
 }
 
-/**
- * If at least two cells have the same value, create one new cell with the value + 1 and remove the other ones.
- * Fill the gaps with new values.
- * @return new data
- */
-function collapseConnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): number[]
+
+// export only to unit tests
+export function collapseConnectedElementsWithSameValue(data: number[], index: number, width: number, height: number): (number | undefined)[]
 {
     const neighbors = getIndicesOfconnectedElementsWithSameValue(data, index, width, height);
     if (neighbors.length < 2) {
         return data; // only collapse if more than one cell has the value
     }
-    const newMaxRandValue = Math.max(...data);  // make this a parameter?
+
     const newData : (number | undefined)[] = [...data];
     // erase all cells with same value
     neighbors.forEach(index => {
         newData[index] = undefined;
     });
-    // fill them with new values -- falling from top if available or create new ones
+    // actually collapse all values with same value to the value one higher
     newData[index] = data[index] + 1;
+    // fill undefined values with values from top if available
     for (let column = 0; column < width; ++column) {
         for (let row = height - 1; row >= 0; row -= 1) {
             const positionThis = {row: row, column: column};
@@ -148,14 +149,34 @@ function collapseConnectedElementsWithSameValue(data: number[], index: number, w
             if (newData[indexThis] !== undefined) {
                 continue; // we only care for undefined
             }
-            const indexFallingDown = findNextUndefinedAbove(positionThis, data, width, height);
+            const indexFallingDown = findNextUndefinedAbove(positionThis, newData, width, height);
             if (indexFallingDown !== undefined && newData[indexFallingDown] !== undefined) {
                 swapInArray(newData, indexThis, indexFallingDown);
             }
             else {
-                // nothing above -- fill with random value
-                newData[indexThis] = randInt(1, newMaxRandValue);
+                break; // nothing above, so we're done in this column
             }
+        }
+    }
+
+    return newData;
+}
+
+
+/**
+ * If at least two cells have the same value, create one new cell with the value + 1 and remove the other ones.
+ * Fill the gaps with new values.
+ * @return new data
+ */
+function collapseConnectedElementsWithSameValueAndFillRandomly(data: number[], index: number, width: number, height: number): number[]
+{
+    const newMaxRandValue = Math.max(...data);  // make this a parameter?
+
+    const newData = collapseConnectedElementsWithSameValue(data, index, width, height);
+
+    for (let i = 0; i < newData.length; ++i) {
+        if (newData[i] === undefined) {
+            newData[i] = randInt(1, newMaxRandValue);
         }
     }
 
@@ -207,7 +228,7 @@ export function Grid(props: GridProps) {
             style={{backgroundColor: getColorFor(values[i])}}
             onClick={_event => {
                 if (isActive) {
-                    setValues(collapseConnectedElementsWithSameValue(values, i, props.width, props.height));
+                    setValues(collapseConnectedElementsWithSameValueAndFillRandomly(values, i, props.width, props.height));
                     setSelectedIndex(undefined);
                 }
                 else {
@@ -218,6 +239,8 @@ export function Grid(props: GridProps) {
             </div>
         )
     }
+
+    console.log(JSON.stringify(values));
 
     const isGameOver = checkIsGameOver(values, props.width, props.height);
 
